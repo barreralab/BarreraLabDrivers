@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "barreralabdrivers"
+version = "0.0.1"
+authors = [
+  { name="Vishwanath Wimalasena", email="vishy235@gmail.com" },
+]
+description = "Drivers and utilities for instruments in the Barrera Lab"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "qcodes"
+]
+
+[project.urls]
+Homepage = "https://github.com/barreralab/BarreraLabDrivers"
+Issues = "https://github.com/barreralab/BarreraLabDrivers/Issues"
