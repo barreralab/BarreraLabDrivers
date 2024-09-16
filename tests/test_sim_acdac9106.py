@@ -5,20 +5,22 @@ pytest sim_test.py
 '''
 import pytest 
 
-from barreralabdrivers.drivers import DCDAC5764
+from barreralabdrivers.drivers import ACDAC9106
+
+
 # The following decorator makes the driver
 # available to all the functions in this module
-@pytest.fixture(scope='function', name="dcdac_driver")
-def _dcdac_driver():
-    dcdac_sim = DCDAC5764('dcdac_sim',
+@pytest.fixture(scope='function', name="acdac_driver")
+def _acdac_driver():
+    ac_dac_sim = ACDAC9106('acdac_sim',
                                  address='GPIB::1::INSTR',
-                                 pyvisa_sim_file="barreralabdrivers.sims:DCDAC5764.yaml")
-    yield dcdac_sim
+                                 pyvisa_sim_file="barreralabdrivers.sims:ACDAC9106.yaml")
+    yield ac_dac_sim
 
-    dcdac_sim.close()
+    ac_dac_sim.close()
 
 
-def test_init_v1(dcdac_driver):
+def test_init_v1(acdac_driver):
     """
     Test that simple initialisation works
     """
@@ -26,7 +28,7 @@ def test_init_v1(dcdac_driver):
     # There is not that much to do, really.
     # We can check that the IDN string reads back correctly
 
-    idn_dict = dcdac_driver.IDN()
+    idn_dict = acdac_driver.IDN()
 
     assert idn_dict['vendor'] == 'BARRERA'
-    assert idn_dict['model'] == 'DCDAC (Simulated)'
+    assert idn_dict['model'] == 'ACDAC (Simulated)'

@@ -1,0 +1,20 @@
+---
+spec: "1.1"
+devices:
+  acdac:
+    eom:
+      GPIB INSTR:
+        q: "\n"  # MAKE SURE! that this matches the terminator of the driver!
+        r: "\n"
+    error: ERROR
+    dialogues:
+      - q: "*IDN?"
+        r: "BARRERA, ACDAC (Simulated), 9106, 1.1"
+    
+    # properties:
+    #   channel1: 
+
+
+resources:
+  GPIB::1::INSTR:
+    device: acdac

@@ -1,6 +1,6 @@
 import qcodes as qc
 
-from barreralabdrivers import ACDAC9106
+from barreralabdrivers.drivers import ACDAC9106
 from time import sleep
 dac = ACDAC9106("acdac", "ASRL5::INSTR")
 
