@@ -2,6 +2,7 @@ import qcodes as qc
 
 from barreralabdrivers.drivers import ACDAC9106
 from time import sleep
+
 dac = ACDAC9106("acdac", "ASRL5::INSTR")
 
 station = qc.Station()
@@ -17,13 +18,13 @@ dac.ch4.voltage(400)
 
 dac.ch4.phase(24)
 
-dac.display_mode("FOCUS4")
+# dac.display_mode("FOCUS4")
 
 dac.print_readable_snapshot()
 
 while True:
     volts = float(input("Enter voltage: "))
-    if (volts < 0):
+    if volts < 0:
         break
     try:
         dac.ch4.voltage(volts)

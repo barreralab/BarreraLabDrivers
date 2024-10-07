@@ -1,5 +1,6 @@
 import unittest
-# import qcodes as qc 
+
+# import qcodes as qc
 # from qcodes.extensions import DriverTestCase
 import time
 from barreralabdrivers import DCDAC5764
@@ -8,16 +9,14 @@ from barreralabdrivers import DCDAC5764
 class TestDCDAC(unittest.TestCase):
     def setUp(self):
         self.dcdac = DCDAC5764("dcdac", "ASRL4::INSTR")
-        self.dcdac.reset()    
+        self.dcdac.reset()
         self.dcdac
-
 
     # def test_add_station(self):
     #     station = qc.Station()
     #     try:
     #         station.add_component(self.dcdac)
-    #     except 
-
+    #     except
 
     def test_bad_values(self):
         for chan_num in range(8):
@@ -35,7 +34,7 @@ class TestDCDAC(unittest.TestCase):
         start = time.time()
         for offset in range(0, 2):
             for step in range(0, 2):
-                for volt in range(-10,11):
+                for volt in range(-10, 11):
                     for chan in self.dcdac.channels:
                         chan.offset(offset)
                         chan.step(step)
@@ -46,7 +45,7 @@ class TestDCDAC(unittest.TestCase):
                         volts.append(chan.voltage())
         end = time.time()
 
-        time_per_op = (end - start)/(4 * 21 * 8)
+        time_per_op = (end - start) / (4 * 21 * 8)
         print(f"{end - start} seconds for {4 * 21 * 8} operations -> {time_per_op}s/op")
 
         self.assertLessEqual(time_per_op, 0.14)
@@ -56,9 +55,10 @@ class TestDCDAC(unittest.TestCase):
 
     def _get_data(self, chan: int):
         return self.dcdac.channels[chan].voltage()
-        
+
     def tearDown(self) -> None:
         self.dcdac.close()
+
 
 if __name__ == "__main__":
     unittest.main()

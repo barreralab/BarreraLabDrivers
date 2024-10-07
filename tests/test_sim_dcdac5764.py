@@ -1,18 +1,23 @@
-'''
+"""
 Testing BarreraDCDAC driver with simulated instrument
 Run by navigating to tests folder and executing 
 pytest sim_test.py
-'''
-import pytest 
+"""
+
+import pytest
 
 from barreralabdrivers.drivers import DCDAC5764
+
+
 # The following decorator makes the driver
 # available to all the functions in this module
-@pytest.fixture(scope='function', name="dcdac_driver")
+@pytest.fixture(scope="function", name="dcdac_driver")
 def _dcdac_driver():
-    dcdac_sim = DCDAC5764('dcdac_sim',
-                                 address='GPIB::1::INSTR',
-                                 pyvisa_sim_file="barreralabdrivers.sims:DCDAC5764.yaml")
+    dcdac_sim = DCDAC5764(
+        "dcdac_sim",
+        address="GPIB::1::INSTR",
+        pyvisa_sim_file="barreralabdrivers.sims:DCDAC5764.yaml",
+    )
     yield dcdac_sim
 
     dcdac_sim.close()
@@ -28,5 +33,5 @@ def test_init_v1(dcdac_driver):
 
     idn_dict = dcdac_driver.IDN()
 
-    assert idn_dict['vendor'] == 'BARRERA'
-    assert idn_dict['model'] == 'DCDAC (Simulated)'
+    assert idn_dict["vendor"] == "BARRERA"
+    assert idn_dict["model"] == "DCDAC (Simulated)"
