@@ -5,10 +5,8 @@ from time import sleep
 from typing import Any, Optional
 from functools import partial
 from qcodes.instrument import InstrumentChannel, VisaInstrument
-from qcodes.parameters import ( Parameter )
+from qcodes.parameters import Parameter
 from qcodes.validators import Ints, Numbers
-
-from qcodes.instrument_drivers.yokogawa.Yokogawa_GS200 import YokogawaGS200
 
 log = logging.getLogger(__name__)
 
@@ -29,10 +27,10 @@ class ACDAC9106Channel(InstrumentChannel):
         """
         valid_chnls = [f"ch{i}" for i in range(1, 9)]
         if channel not in valid_chnls:
-            raise ValueError(f'{channel} not in ch1, ..., ch8')
+            raise ValueError(f"{channel} not in ch1, ..., ch8")
 
         super().__init__(parent, name)
-        self.channel = f'CHAN{channel[-1]}'
+        self.channel = f"CHAN{channel[-1]}"
         self._extra_visa_timeout = 5000
 
         self.voltage: Parameter = self.add_parameter(
@@ -42,18 +40,18 @@ class ACDAC9106Channel(InstrumentChannel):
             get_parser=float,
             get_cmd=partial(self._get_set_voltage),
             set_cmd=partial(self._get_set_voltage),
-            vals=Numbers(0, 450)
-            )
+            vals=Numbers(0, 450),
+        )
         "Voltage level parameter"
 
-        self.phase : Parameter = self.add_parameter(
+        self.phase: Parameter = self.add_parameter(
             name="phase",
             unit="deg",
             label="Phase",
             get_parser=float,
-            get_cmd=f'{self.channel}:PHASE?',
-            set_cmd=f'{self.channel}:PHASE {{}};PAT:UPDATE',
-            vals=Numbers(-180, 180)
+            get_cmd=f"{self.channel}:PHASE?",
+            set_cmd=f"{self.channel}:PHASE {{}};PAT:UPDATE",
+            vals=Numbers(-180, 180),
         )
         "Phase parameter"
 
@@ -62,14 +60,13 @@ class ACDAC9106Channel(InstrumentChannel):
         Get or set the voltage level.
 
         Args:
-            voltage: If missing, we assume that we are getting the 
+            voltage: If missing, we assume that we are getting the
             current level. Else we are setting it
         """
         if voltage is not None:
-            self.write(f'{self.channel}:VOLTAGE {voltage};PAT:UPDATE')
+            self.write(f"{self.channel}:VOLTAGE {voltage};PAT:UPDATE")
         else:
-            return self.ask(f'{self.channel}:VOLTAGE?')
-
+            return self.ask(f"{self.channel}:VOLTAGE?")
 
 
 class ACDAC9106(VisaInstrument):
@@ -82,7 +79,8 @@ class ACDAC9106(VisaInstrument):
       terminator: read terminator for reads/writes to the instrument.
     """
 
-    def __init__(self, name: str, address: str, terminator: str = "\n", **kwargs: Any
+    def __init__(
+        self, name: str, address: str, terminator: str = "\n", **kwargs: Any
     ) -> None:
         super().__init__(name, address, terminator=terminator, **kwargs)
 
@@ -100,34 +98,40 @@ class ACDAC9106(VisaInstrument):
             get_parser=float,
             get_cmd=f"FREQ?",
             set_cmd=f"FREQ {{}};PAT:UPDATE",
-            vals=Numbers(0, 1e6)
+            vals=Numbers(0, 1e6),
         )
 
         self.error: Parameter = self.add_parameter(
-            name="error",
-            label="Error",
-            get_cmd="SYS:ERR?",
-            set_cmd=False
+            name="error", label="Error", get_cmd="SYS:ERR?", set_cmd=False
         )
 
         self.display_mode: Parameter = self.add_parameter(
             name="display_mode",
             label="Display Mode",
-            # TODO: add mode getter
             get_cmd=False,
             set_cmd=f"SYS:DISP:MODE {{}}",
-            val_mapping={"NORMAL": 0, "FOCUS1": 1, "FOCUS2": 2, "FOCUS3": 3, "FOCUS4": 4}
+            val_mapping={
+                "NORMAL": 0,
+                "FOCUS1": 1,
+                "FOCUS2": 2,
+                "FOCUS3": 3,
+                "FOCUS4": 4,
+                "REMOTE": 5,
+            },
         )
 
         # Required as Arduino takes around 2 seconds to setup serial
         sleep(3)
         self.connect_message()
 
+        # Set to remote access mode by default
+        self.display_mode("REMOTE")
 
     def reset(self) -> None:
         """
         Reset DAC to 0V and 0deg phase on each channel
         """
         self.write("*RST")
+        self.display_mode("REMOTE")
         log.debug("Reset Instrument. Re-querying settings...")
         self.snapshot(update=True)

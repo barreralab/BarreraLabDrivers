@@ -4,16 +4,17 @@ devices:
   acdac:
     eom:
       GPIB INSTR:
-        q: "\n"  # MAKE SURE! that this matches the terminator of the driver!
+        q: "\n" # MAKE SURE! that this matches the terminator of the driver!
         r: "\n"
     error: ERROR
     dialogues:
       - q: "*IDN?"
-        r: "BARRERA, ACDAC (Simulated), 9106, 1.1"
-    
-    # properties:
-    #   channel1: 
+        r: "BARRERA, ACDAC (Simulated), 9106, 0.2"
 
+    properties:
+      display_mode:
+        setter:
+          q: "SYS:DISP:MODE {}"
 
 resources:
   GPIB::1::INSTR:

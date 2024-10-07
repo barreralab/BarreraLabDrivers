@@ -5,7 +5,7 @@ from time import sleep
 from typing import Any, Optional
 from functools import partial
 from qcodes.instrument import InstrumentChannel, VisaInstrument
-from qcodes.parameters import ( Parameter )
+from qcodes.parameters import Parameter
 from qcodes.validators import Ints, Numbers
 
 
@@ -28,7 +28,7 @@ class DCDAC5764Channel(InstrumentChannel):
         """
         valid_chnls = [f"channel{i}" for i in range(1, 9)]
         if channel not in valid_chnls:
-            raise ValueError(f'{channel} not in channel1, ..., channel8')
+            raise ValueError(f"{channel} not in channel1, ..., channel8")
 
         super().__init__(parent, name)
         self.channel = channel
@@ -41,18 +41,18 @@ class DCDAC5764Channel(InstrumentChannel):
             get_parser=float,
             get_cmd=partial(self._get_set_voltage),
             set_cmd=partial(self._get_set_voltage),
-            vals=Numbers(-10, 10)
-            )
+            vals=Numbers(-10, 10),
+        )
         "Voltage level parameter"
 
         self.offset: Parameter = self.add_parameter(
-            name = "offset",
+            name="offset",
             label="Offset",
             get_cmd=False,
             set_cmd=f"{self.channel}:OFFSET {{}}",
             # signed 8 bit integer
             vals=Ints(-128, 127),
-            )
+        )
         "Offset level settable parameter"
 
         self.step: Parameter = self.add_parameter(
@@ -60,9 +60,9 @@ class DCDAC5764Channel(InstrumentChannel):
             label="Step",
             get_cmd=False,
             set_cmd=f"{self.channel}:STEP {{}}",
-            # signed 6 bit integer 
-            vals=Ints(-32, 31)
-            )
+            # signed 6 bit integer
+            vals=Ints(-32, 31),
+        )
         "Step size settable parameter"
 
     def _get_set_voltage(self, voltage: Optional[float] = None) -> Optional[float]:
@@ -70,14 +70,13 @@ class DCDAC5764Channel(InstrumentChannel):
         Get or set the voltage level.
 
         Args:
-            voltage: If missing, we assume that we are getting the 
+            voltage: If missing, we assume that we are getting the
             current level. Else we are setting it
         """
         if voltage is not None:
-            self.write(f'{self.channel}:VOLTAGE {voltage}')
+            self.write(f"{self.channel}:VOLTAGE {voltage}")
         else:
-            return self.ask(f'{self.channel}:VOLTAGE?')
-
+            return self.ask(f"{self.channel}:VOLTAGE?")
 
 
 class DCDAC5764(VisaInstrument):
@@ -90,7 +89,8 @@ class DCDAC5764(VisaInstrument):
       terminator: read terminator for reads/writes to the instrument.
     """
 
-    def __init__(self, name: str, address: str, terminator: str = "\n", **kwargs: Any
+    def __init__(
+        self, name: str, address: str, terminator: str = "\n", **kwargs: Any
     ) -> None:
         super().__init__(name, address, terminator=terminator, **kwargs)
 
@@ -104,7 +104,6 @@ class DCDAC5764(VisaInstrument):
         # Required as Arduino takes around 2 seconds to setup serial
         sleep(3)
         self.connect_message()
-
 
     def reset(self) -> None:
         """
