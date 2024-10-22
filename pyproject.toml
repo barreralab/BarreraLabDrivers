@@ -17,8 +17,11 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "qcodes >= 0.46.0"
+    "pyserial >= 3.5"
 ]
+
+[project.scripts]
+serial-monitor = "barreralabdrivers.utils.serial_monitor:start_serial_monitor_cli"
 
 [project.urls]
 Homepage = "https://github.com/barreralab/BarreraLabDrivers"
