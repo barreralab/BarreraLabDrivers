@@ -1,5 +1,5 @@
-import numpy as np
 from time import sleep
+import numpy as np
 
 
 def paramp(
