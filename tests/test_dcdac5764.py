@@ -3,14 +3,17 @@ import unittest
 # import qcodes as qc
 # from qcodes.extensions import DriverTestCase
 import time
-from barreralabdrivers import DCDAC5764
+import numpy as np
+from barreralabdrivers.drivers import DCDAC5764
+import random
+
+address = "ASRL4::INSTR"
 
 
 class TestDCDAC(unittest.TestCase):
     def setUp(self):
-        self.dcdac = DCDAC5764("dcdac", "ASRL4::INSTR")
+        self.dcdac = DCDAC5764("dcdac", address)
         self.dcdac.reset()
-        self.dcdac
 
     # def test_add_station(self):
     #     station = qc.Station()
@@ -49,6 +52,20 @@ class TestDCDAC(unittest.TestCase):
         print(f"{end - start} seconds for {4 * 21 * 8} operations -> {time_per_op}s/op")
 
         self.assertLessEqual(time_per_op, 0.14)
+
+    # @unittest.skip("demonstrating skipping")
+    def test_paramp_single_chan(self):
+        start = 10
+        chan = self.dcdac.channels[random.randint(0, 7)]
+        points = [(random.random() * 20 - 10) for _ in range(100)]
+        for point in points:
+            chan.voltage(point)
+            believed = chan.voltage()
+            self.assertAlmostEqual(point, believed, 3)
+
+    def test_getting(self):
+        for chan in self.dcdac.channels:
+            self.assertAlmostEqual(chan.voltage(), 0, 3)
 
     def _send_data(self, chan: int, val: float):
         self.dcdac.channels[chan].voltage(val)

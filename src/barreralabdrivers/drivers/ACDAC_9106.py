@@ -98,7 +98,7 @@ class ACDAC9106(VisaInstrument):
             get_parser=float,
             get_cmd=f"FREQ?",
             set_cmd=f"FREQ {{}};PAT:UPDATE",
-            vals=Numbers(0, 1e6),
+            vals=Numbers(0, 4e6),
         )
 
         self.error: Parameter = self.add_parameter(
