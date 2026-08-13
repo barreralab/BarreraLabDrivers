@@ -55,6 +55,7 @@ class YokogawaGS820Channel(InstrumentChannel):
         self._extra_visa_timeout = 5000
         self.channel = channel
 
+
         self.vrange = self._parent.vranges[self.model]
         self.irange = self._parent.iranges[self.model]
 
@@ -330,7 +331,7 @@ class YokogawaGS820Channel(InstrumentChannel):
                 current level. Else we are setting it
         """
         if self.source_mode.get_latest() != mode:
-            return float(self.query(f"{self.channel}:MEAS?"))
+            return float(self.ask(f"{self.channel}:MEAS?"))
         else:
             if output_level is not None:
                  self._set_output(output_level)
@@ -582,7 +583,7 @@ class YokogawaGS820(VisaInstrument):
             instrument=self
         )
 
-        print("GREAT GOOGLY MOOGLY")
+        print("VERY NICE")
         self.connect_message()
 
     def _display_settext(self, text: str) -> None:
