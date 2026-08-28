@@ -4,7 +4,8 @@ from .OxfordMercuryITC import MercuryiTC
 from .OxfordMercuryIPS import MercuryiPS
 from .Keithley_6500 import Keithley6500, Keithley6500CommandSetError
 from .Yokogawa_GS820 import YokogawaGS820, YokogawaGS820Channel, YokogawaGS200Exception
-from .ZHinst_MFLI import MFLI
+# from .ZHinst_MFLI import MFLI
+from .BlueforsTC import BlueforsTemperatureController, TemperatureModule
 
 __all__ = [
     "ACDAC9106",
@@ -18,5 +19,7 @@ __all__ = [
     "YokogawaGS820",
     "YokogawaGS820Channel",
     "YokogawaGS200Exception",
-    "MFLI_Instrument",
+    # "MFLI_Instrument",
+    "BlueforsTemperatureController",
+    'TemperatureModule',
 ]
