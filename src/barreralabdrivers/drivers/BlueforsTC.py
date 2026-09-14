@@ -125,13 +125,14 @@ class TemperatureModule(InstrumentModule):
         self.temp_id = temp_id
         self.htr_id = htr_id
         self.controller = parent.controller
+        self.namee = name
         if name == 'fse':
             self.unit = 'bftc2'
         else:
             self.unit = 'bftc'
 
         self.temp = Parameter(
-            name = 'temp',
+            name = self.namee +'_temp',
             unit = 'K',
             label = f'Temperature of {self.name}',
             get_cmd = lambda: self.controller.get_channel_temperature(self.temp_id),
@@ -144,7 +145,7 @@ class TemperatureModule(InstrumentModule):
         if self.name == 'mxc' or 'fse' or 'still':
 
             self.active = Parameter(
-                    name = 'active',
+                    name = self.namee + '_active',
                     label = f'activate heater for {self.name}',
                     get_cmd = lambda: self._get_htr_attribute(htr_id = self.htr_id, target = "active"),
                     set_cmd = lambda x: self._set_htr_attribute(htr_id = self.htr_id, target = "active", value = self._parse_bools(x)),
@@ -152,7 +153,7 @@ class TemperatureModule(InstrumentModule):
                 )
 
             self.power = Parameter(
-                name = 'heaterpower',
+                name = self.namee + '_power',
                 unit = 'W',
                 label = f'Heat power of {self.name}',
                 get_cmd = lambda: self._get_htr_attribute(htr_id = self.htr_id, target = "power"),
@@ -161,7 +162,7 @@ class TemperatureModule(InstrumentModule):
             )
 
             self.setpoint = Parameter(
-                name = 'setpoint',
+                name = self.namee + '_setpoint',
                 unit = 'K',
                 label = f'Temperature setpoint for PID control of {self.name}',
                 get_cmd = lambda: self._get_htr_attribute(htr_id = self.htr_id, target = "setpoint"),
@@ -170,7 +171,7 @@ class TemperatureModule(InstrumentModule):
             )
 
             self.pid_mode = Parameter(
-                name = 'pid_mode',
+                name = self.namee + '_pid_mode',
                 label = f'Temperature pid_mode for PID control of {self.name}',
                 get_cmd = lambda: self._get_htr_attribute(htr_id = self.htr_id, target = "pid_mode"),
                 set_cmd = lambda x: self._set_htr_attribute(htr_id = self.htr_id, target = "pid_mode", value = self._parse_bools(x)),
@@ -178,7 +179,7 @@ class TemperatureModule(InstrumentModule):
             )
 
             self.pid_p = Parameter(
-                name = 'pid_p',
+                name = self.namee + '_pid_p',
                 label = f'Temperature pid_p for PID control of {self.name}',
                 get_cmd = lambda: self._get_htr_attribute(htr_id = self.htr_id, target = "pid_p"),
                 set_cmd = lambda x: self._set_htr_attribute(htr_id = self.htr_id, target = "pid_p", value = x),
@@ -186,7 +187,7 @@ class TemperatureModule(InstrumentModule):
             )
 
             self.pid_i = Parameter(
-                name = 'pid_i',
+                name = self.namee + '_pid_i',
                 label = f'Temperature pid_i for PID control of {self.name}',
                 get_cmd = lambda: self._get_htr_attribute(htr_id = self.htr_id, target = "pid_i"),
                 set_cmd = lambda x: self._set_htr_attribute(htr_id = self.htr_id, target = "pid_i", value = x),
@@ -194,7 +195,7 @@ class TemperatureModule(InstrumentModule):
             )
 
             self.pid_d = Parameter(
-                name = 'pid_d',
+                name = self.namee + '_pid_d',
                 label = f'Temperature pid_d for PID control of {self.name}',
                 get_cmd = lambda: self._get_htr_attribute(htr_id = self.htr_id, target = "pid_d"),
                 set_cmd = lambda x: self._set_htr_attribute(htr_id = self.htr_id, target = "pid_d", value = x),
@@ -247,6 +248,7 @@ class TemperatureModule(InstrumentModule):
             device = f'driver.{self.unit}.data.heaters.heater_{htr_id}'
             print("  device:", device)
             self.controller._set_value_request(device, target, value)
+            self.controller._apply_values_request(device)
 
     def _parse_bools(self,val):
         if val in (0, "off", False):
