@@ -119,7 +119,7 @@ class StoredParameter(Parameter):
         
 
 class Sum:
-    def __init__(self, name, param1: Parameter, param2: Parameter):
+    def __init__(self, name, param1: Parameter, param2: Parameter, diff = None):
         """
         A Qcodes parameter which can be used to read the sum of two other parameters, or set the sum with a given fixed difference
         name: str 
@@ -128,12 +128,18 @@ class Sum:
         A qcodes parameter 
         param2: Parameter
         A qcodes parameter
+        diff:
+        the desired constant difference if needed
         """
         self.full_name = name
         self.p1 = param1
         self.p2 = param2
         self.summ = 0
-        self.diff = 0
+        self.supplied = True
+        if diff == None:
+            self.supplied = False
+        self.diff = diff
+
 
     def __call__(self, val=None):
         """
@@ -146,7 +152,8 @@ class Sum:
 
         else:
             self.summ = val
-            self.diff = self.p1() - self.p2()
+            if self.supplied == False:
+                self.diff = self.p1() - self.p2()
             p1val = (self.summ + self.diff) / 2
             p2val = (self.summ - self.diff) / 2
             self.p1(p1val)
@@ -155,7 +162,7 @@ class Sum:
 
 class Diff:
     
-    def __init__(self, name, param1, param2):
+    def __init__(self, name, param1, param2, summ = None):
         """
         A Qcodes parameter which can be used to read the difference of two other parameters, or set the difference with a given fixed difference
         name: str 
@@ -169,8 +176,11 @@ class Diff:
         self.full_name = name
         self.p1 = param1
         self.p2 = param2
-        self.summ = 0
+        self.summ = summ
         self.diff = 0
+        self.supplied = True
+        if self.summ == None:
+            self.supplied = False
 
     def __call__(self, val=None):
         """
@@ -182,8 +192,9 @@ class Diff:
             return self.p1() - self.p2()
         else:
             self.diff = val
-            sumval = self.p1() + self.p2()
-            p1val = (sumval + self.diff) / 2
-            p2val = (sumval - self.diff) / 2
+            if self.supplied == False:
+                self.summ = self.p1() + self.p2()
+            p1val = (self.summ + self.diff) / 2
+            p2val = (self.summ - self.diff) / 2
             self.p1(p1val)
             self.p2(p2val)
