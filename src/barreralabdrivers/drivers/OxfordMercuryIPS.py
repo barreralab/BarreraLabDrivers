@@ -4,6 +4,8 @@ written by Eames Donovan
 July 21 2025 revision 0.1: basic identification and read functionality
 """
 
+from ._mercury import MercuryCommunication, response_float
+
 import qcodes.validators as vals
 import logging
 
@@ -215,7 +217,7 @@ class iPSMagnet(InstrumentModule):
             unit="ohms",
             label=f"heater Resistance of {self.full_name}",
             get_cmd=lambda: self._flush_then_get(f"READ:DEV:{self.heater}:HTR:RES"),
-            # get_parser=self._parse_response_to_float,
+            get_parser=self._parse_response_to_float,
         )
         """
         htr_resistance
@@ -230,7 +232,7 @@ class iPSMagnet(InstrumentModule):
             unit="V",
             label=f"heater Voltage Limit of {self.full_name}",
             get_cmd=lambda: self._flush_then_get(f"READ:DEV:{self.heater}:HTR:VLIM"),
-            # get_parser=self._parse_response_to_float,
+            get_parser=self._parse_response_to_float,
         )
 
         """
@@ -401,30 +403,13 @@ class iPSMagnet(InstrumentModule):
         raise ValueError(f"Expected 'ON' or 'OFF', got {val}")
 
     def _set_with_flush(self, cmd: str) -> None:
-        # The iTC sends a response with every SET cmd, but we don't need it. This flushes the response buffer so we stay up to date with responses
-        self.write(cmd)
-        try:
-            _ = self.root_instrument.visa_handle.read()
-        except:
-            pass
+        self.root_instrument._mercury_set(cmd)
 
     def _flush_then_get(self, cmd: str) -> str:
-        try:
-            _ = self.root_instrument.visa_handle.read()
-        except Exception:
-            pass  # Likely means buffer was already empty
-        return self.root_instrument.visa_handle.query(cmd)
+        return self.root_instrument._mercury_query(cmd)
 
     def _parse_response_to_float(self, response: str) -> float:
-        """
-        Extracts the last floating point number from a string.
-        """
-
-        matches = re.findall(r"[-+]?\d*\.\d+|\d+", response)
-        if matches:
-            return float(matches[-1])  # Take the last match
-        else:
-            raise ValueError(f"No numeric value found in response: {response}")
+        return response_float(response)
 
     def _ramp_action(self, cmd: str) -> None:
         if cmd == "HOLD":
@@ -490,14 +475,13 @@ class iPSMagnet(InstrumentModule):
                 return "OFF"
 
 
-class MercuryiPS(VisaInstrument):
+class MercuryiPS(MercuryCommunication, VisaInstrument):
     def __init__(
         self, name: str, address: str, terminator: str = "\n", **kwargs: Any
     ) -> None:
         super().__init__(name, address, terminator=terminator, **kwargs)
 
         self.connect_message()
-        self.visa_handle.timeout = 400
 
         self.add_submodule(
             name="mag",
@@ -543,27 +527,10 @@ class MercuryiPS(VisaInstrument):
         )
 
     def _parse_response_to_float(self, response: str) -> float:
-        """
-        Extracts the last floating point number from a string.
-        """
-
-        matches = re.findall(r"[-+]?\d*\.\d+|\d+", response)
-        if matches:
-            return float(matches[-1])  # Take the last match
-        else:
-            raise ValueError(f"No numeric value found in response: {response}")
+        return response_float(response)
 
     def _set_with_flush(self, cmd: str) -> None:
-        # The iTC sends a response with every SET cmd, but we don't need it. This flushes the response buffer so we stay up to date with responses
-        self.write(cmd)
-        try:
-            _ = self.root_instrument.visa_handle.read()
-        except:
-            pass
+        self.root_instrument._mercury_set(cmd)
 
     def _flush_then_get(self, cmd: str) -> str:
-        try:
-            _ = self.root_instrument.visa_handle.read()
-        except Exception:
-            pass  # Likely means buffer was already empty
-        return self.root_instrument.visa_handle.query(cmd)
+        return self.root_instrument._mercury_query(cmd)
