@@ -17,4 +17,6 @@ The tests use simulated sockets and actual QCoDeS objects. They do not contact r
 Existing raw write()/ask() access bypasses the parameter transaction helpers; do not use it concurrently.
 Magnet control sequencing is inherited and still requires a separate control/safety review.
 The localhost broker is supplied by the separate vti-control project, not this driver package.
-No measurement environment was updated automatically and no changes have been pushed.
+No measurement environment was updated automatically. The update is published on the
+`vti/mercury-communications` branch and proposed against `serial_comms` in draft PR
+https://github.com/barreralab/BarreraLabDrivers/pull/4. It has not been merged.
