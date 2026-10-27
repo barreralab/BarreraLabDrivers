@@ -21,6 +21,10 @@ dependencies = [
     "pyserial >= 3.5",
 ]
 
+[project.optional-dependencies]
+mercury = ["qcodes", "numpy", "pyvisa-py"]
+test = ["pytest"]
+
 [project.scripts]
 serial-monitor = "barreralabdrivers.utils.serial_monitor:start_serial_monitor_cli"
 

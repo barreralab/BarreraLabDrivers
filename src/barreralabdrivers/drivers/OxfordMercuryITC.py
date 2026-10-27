@@ -11,6 +11,8 @@ July 18 2025 revision 0.1: adding basic read functionality for VTI pressure, VTI
 
 """
 
+from ._mercury import MercuryCommunication, response_float
+
 import qcodes.validators as vals
 import logging
 
@@ -238,15 +240,7 @@ class ITC_temperature_module(InstrumentModule):
         )
 
     def _parse_response_to_float(self, response: str) -> float:
-        """
-        Extracts the last floating point number from a string.
-        """
-
-        matches = re.findall(r"[-+]?\d*\.\d+|\d+", response)
-        if matches:
-            return float(matches[-1])  # Take the last match
-        else:
-            raise ValueError(f"No numeric value found in response: {response}")
+        return response_float(response)
 
     def _on_or_off(self, val: str) -> str:
         if val == {} or val is None:
@@ -268,32 +262,19 @@ class ITC_temperature_module(InstrumentModule):
             )
 
     def _set_with_flush(self, cmd: str) -> None:
-        # The iTC sends a response with every SET cmd, but we don't need it. This flushes the response buffer so we stay up to date with responses
-        self.write(cmd)
-        try:
-            _ = self.root_instrument.visa_handle.read()
-        except:
-            pass
+        self.root_instrument._mercury_set(cmd)
 
     def _flush_then_get(self, cmd: str) -> str:
-        try:
-            _ = self.root_instrument.visa_handle.read()
-        except Exception:
-            pass  # Likely means buffer was already empty
-        return self.root_instrument.visa_handle.query(cmd)
+        return self.root_instrument._mercury_query(cmd)
 
 
-class MercuryiTC(VisaInstrument):
+class MercuryiTC(MercuryCommunication, VisaInstrument):
     def __init__(
         self, name: str, address: str, terminator: str = "\n", **kwargs: Any
     ) -> None:
         super().__init__(name, address, terminator=terminator, **kwargs)
 
-        self.visa_handle.timeout = 400
         self.connect_message()
-        self._set_with_flush("SET:DEV:DB5.P1:PRES:LOOP:AUX:DB4.G1")
-        self._set_with_flush("SET:DEV:DB5.P1:PRES:LOOP:SWMD:OFF")
-        self._set_with_flush("SET:DEV:DB5.P1:PRES:LOOP:FAUT:OFF")
 
         """
         Identification of the powersupply
@@ -505,7 +486,7 @@ class MercuryiTC(VisaInstrument):
             label="Pressure Setpoint",
             unit="mBar",
             get_cmd=lambda: self._flush_then_get("READ:DEV:DB5.P1:PRES:LOOP:PSET"),
-            # get_parser=self._parse_response_to_float,
+            get_parser=self._parse_response_to_float,
             set_cmd=lambda val: self._set_with_flush(
                 f"SET:DEV:DB5.P1:PRES:LOOP:PSET:{val}"
             ),
@@ -513,15 +494,7 @@ class MercuryiTC(VisaInstrument):
         )
 
     def _parse_response_to_float(self, response: str) -> float:
-        """
-        Extracts the last floating point number from a string.
-        """
-
-        matches = re.findall(r"[-+]?\d*\.\d+|\d+", response)
-        if matches:
-            return float(matches[-1])  # Take the last match
-        else:
-            raise ValueError(f"No numeric value found in response: {response}")
+        return response_float(response)
 
     def _on_or_off(self, val: str) -> str:
         if val == {} or val is None:
@@ -532,16 +505,14 @@ class MercuryiTC(VisaInstrument):
         raise ValueError(f"Expected 'ON' or 'OFF', got {val}")
 
     def _set_with_flush(self, cmd: str) -> None:
-        # The iTC sends a response with every SET cmd, but we don't need it. This flushes the response buffer so we stay up to date with responses
-        self.write(cmd)
-        try:
-            _ = self.root_instrument.visa_handle.read()
-        except:
-            pass
+        self.root_instrument._mercury_set(cmd)
 
     def _flush_then_get(self, cmd: str) -> str:
-        try:
-            _ = self.root_instrument.visa_handle.read()
-        except Exception:
-            pass  # Likely means buffer was already empty
-        return self.root_instrument.visa_handle.query(cmd)
+        return self.root_instrument._mercury_query(cmd)
+
+    def configure_manual_needle_valve(self) -> None:
+        """Explicitly apply the legacy manual valve configuration; changes hardware state."""
+        for command in ("SET:DEV:DB5.P1:PRES:LOOP:AUX:DB4.G1",
+                        "SET:DEV:DB5.P1:PRES:LOOP:SWMD:OFF",
+                        "SET:DEV:DB5.P1:PRES:LOOP:FAUT:OFF"):
+            self._mercury_set(command)
